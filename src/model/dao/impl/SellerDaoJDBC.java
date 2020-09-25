@@ -62,16 +62,8 @@ public class SellerDaoJDBC implements SellerDao {
 			 * valores
 			 */
 			if (rs.next()) {
-				Department dep = new Department();
-				dep.setId(rs.getInt("DepartmentId"));
-				dep.setName(rs.getString("DepName"));
-				Seller obj = new Seller();
-				obj.setId(rs.getInt("Id"));
-				obj.setName(rs.getString("Name"));
-				obj.setEmail(rs.getString("Email"));
-				obj.setBaseSalary(rs.getDouble("BaseSalary"));
-				obj.setBirthDate(rs.getDate("BirthDate"));
-				obj.setDepartment(dep);
+				Department dep = instantiateDepartment(rs);
+				Seller obj = instantiateSeller(rs, dep);
 				// Se tudo certo eu retorno o objeto com o outro dentro para a aplicação
 				return obj;
 
@@ -89,6 +81,34 @@ public class SellerDaoJDBC implements SellerDao {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
+	}
+
+	/*
+	 * Aqui é a mesma coisa do de baixo, criamos uma método para aproveitar a
+	 * instaciação em varios lugares, e ai tivemos que propagar o throw aqui porque
+	 * pode dar erro de acesso aos dados.
+	 */
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
+		Seller obj = new Seller();
+		obj.setId(rs.getInt("Id"));
+		obj.setName(rs.getString("Name"));
+		obj.setEmail(rs.getString("Email"));
+		obj.setBaseSalary(rs.getDouble("BaseSalary"));
+		obj.setBirthDate(rs.getDate("BirthDate"));
+		obj.setDepartment(dep);
+		return obj;
+	}
+
+	/*
+	 * Criamos métodos para instaciar o departamente para reaproveitar a
+	 * instanciação e como pode dar erro no acesso aos dados do banco tivemos que
+	 * propagar o SQLException que foi chamado la no método principal para cá também
+	 */
+	private Department instantiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department();
+		dep.setId(rs.getInt("DepartmentId"));
+		dep.setName(rs.getString("DepName"));
+		return dep;
 	}
 
 	@Override
