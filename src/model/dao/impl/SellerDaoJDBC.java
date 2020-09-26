@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -115,6 +118,65 @@ public class SellerDaoJDBC implements SellerDao {
 	public List<Seller> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	// Inclução do novo método de busca por departamento.
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+
+			// só mudou a query que é executada
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " + "WHERE DepartmentId = ? " + "ORDER BY Name");
+
+			st.setInt(1, department.getId());
+
+			rs = st.executeQuery();
+
+			/*
+			 * Aqui como a intenção é retornar uma lista com todos os vendedores de cada
+			 * departamento mais sem ter que instanciar o departamento varias vezes então
+			 * riamos uma lista que vai receber esses vendedores mais também já mandamos o
+			 * map com o hashMap para garantir que não teremos duas instacias do mesmo
+			 * departamento
+			 */
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+
+			// Aqui eu fazendo um loop na lista para saber quantos vendedores tem na lista
+			while (rs.next()) {
+				/*
+				 * Aqui eu vou procurar pelo id do departamento para saber se tem algum
+				 * departamento instanciado
+				 */
+				Department dep = map.get(rs.getInt("DepartmentId"));
+
+				/*
+				 * Se não tiver nenhum departamento inicializado eu instancio, caso já exista eu
+				 * passo para a instancia do vendedor e boa
+				 */
+				if (dep == null) {
+					dep = instantiateDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+
+				Seller obj = instantiateSeller(rs, dep);
+				list.add(obj);
+
+			}
+			return list;
+		} catch (SQLException e) {
+
+			throw new DbException(e.getMessage());
+		} finally {
+
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 }
