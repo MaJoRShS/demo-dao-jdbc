@@ -30,6 +30,14 @@ public class Program {
 		for (Seller obj : list) {
 			System.out.println(obj);
 		}
+
+		System.out.println("\n==== Test 3: findaLL ====");
+
+		//Aqui eu to reaproveitando a lista que já foi instanciada no método anterior.
+		list = sellerDao.findAll();
+		for (Seller obj : list) {
+			System.out.println(obj);
+		}
 	}
 
 }
