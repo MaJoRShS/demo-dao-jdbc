@@ -82,8 +82,24 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	@Override
-	public void deleteById(Integer obj) {
-		// TODO Auto-generated method stub
+	public void deleteById(Integer id) {
+		PreparedStatement st = null;
+
+		/*
+		 * Aqui temos o método para remover os registro do banco de dados porém não
+		 * temos nenhuma validação para o caso do usuario não digitar um id valido, da
+		 * para colocar mais agora eu caguei, depois quem sabe eu retorne e arrume isso
+		 */
+		try {
+			st = conn.prepareStatement("DELETE FROM seller WHERE Id = ? ");
+
+			st.setInt(1, id);
+			st.executeUpdate();
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(st);
+		}
 
 	}
 
